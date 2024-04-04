@@ -20,6 +20,7 @@ services:
       - ./:/var/www
     environment:
       DB_PORT: ${DB_PORT:-3306}
+      DB_HOST: ${DB_HOST}
     networks:
       - app-network
 
@@ -36,6 +37,7 @@ services:
       - ./:/var/www
     environment:
       DB_PORT: ${DB_PORT:-3306}
+      DB_HOST: ${DB_HOST}
     networks:
       - app-network
       
