@@ -7,6 +7,7 @@ networks:
 services:
   php:
     container_name: php_${APP_NAME}
+    restart: always
     profiles:
       - local
     user: "${USER}:${GROUP}"
@@ -24,6 +25,7 @@ services:
 
   supervisor:
     container_name: supervisor_${APP_NAME}
+    restart: always
     profiles:
       - local
     user: "${USER}:${GROUP}"
@@ -39,6 +41,7 @@ services:
       
   nginx:
     container_name: nginx_${APP_NAME}
+    restart: always
     profiles:
       - local
     build: 
@@ -56,10 +59,11 @@ services:
       - app-network
 
   redis:
+    image: redis:latest
     container_name: redis_${APP_NAME}
+    restart: always
     profiles:
       - local
-    image: redis:latest
     ports:
       - ${REDIS_PORT:-6379}:6379
     networks:
@@ -68,6 +72,7 @@ services:
   redisinsight:
     container_name: redisinsight_${APP_NAME}
     image: redislabs/redisinsight:latest
+    restart: always
     profiles:
       - local
     ports:
@@ -78,6 +83,7 @@ services:
   rabbitmq:
     image: rabbitmq:management
     container_name: rabbitmq_${APP_NAME}
+    restart: always
     profiles:
       - local
     ports:
@@ -112,6 +118,7 @@ services:
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: phpmyadmin_${APP_NAME}
+    restart: always
     profiles:
       - local
     depends_on:
@@ -120,7 +127,6 @@ services:
       PMA_HOST: db
       PMA_PORT: 3306
       PMA_ARBITRARY: 1
-    restart: always
     ports:
       - 8081:80
     networks:
@@ -148,6 +154,7 @@ services:
   postgres:
     image: postgres:14-alpine
     container_name: postgres_${APP_NAME}
+    restart: always
     profiles:
       - local
     ports:
