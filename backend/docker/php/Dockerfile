@@ -1,4 +1,4 @@
-FROM php:8.1-cli
+FROM php:8.1-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    supervisor \
     libpq-dev \
     netcat-traditional
 
@@ -22,11 +21,11 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sockets pdo p
 # Install Redis extension
 RUN pecl update-channels && pecl install redis && docker-php-ext-enable redis
 
-RUN chmod -R 777 /var/log/supervisor
-RUN chmod -R 777 /var/run
+# Get latest Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-COPY supervisord.conf /etc/supervisor/conf.d/laravel-worker.conf
+COPY run.sh /tmp
 
-EXPOSE 22 80
+COPY $PHP_INI_NAME /usr/local/etc/php/conf.d/40-custom.ini
 
-CMD ["/usr/bin/supervisord"]
+ENTRYPOINT ["/tmp/run.sh","php-fpm","-F"]
