@@ -1,4 +1,4 @@
-FROM php:8.1-fpm
+FROM php:8.1-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -7,13 +7,19 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libjpeg-dev \
+    libwebp-dev \
     zip \
     unzip \
+    supervisor \
     libpq-dev \
     netcat-traditional
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Configure php extensions
+RUN docker-php-ext-configure gd --enable-gd --with-jpeg --with-webp
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sockets pdo pdo_pgsql pgsql
@@ -21,11 +27,17 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sockets pdo p
 # Install Redis extension
 RUN pecl update-channels && pecl install redis && docker-php-ext-enable redis
 
-# Get latest Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install imagick
+RUN  apt-get update && apt-get install -y \
+    libmagickwand-dev --no-install-recommends \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick
 
-COPY run.sh /tmp
+RUN chmod -R 777 /var/log/supervisor
+RUN chmod -R 777 /var/run
 
-COPY $PHP_INI_NAME /usr/local/etc/php/conf.d/40-custom.ini
+COPY supervisord.conf /etc/supervisor/conf.d/laravel-worker.conf
 
-ENTRYPOINT ["/tmp/run.sh","php-fpm","-F"]
+EXPOSE 22 80
+
+CMD ["/usr/bin/supervisord"]

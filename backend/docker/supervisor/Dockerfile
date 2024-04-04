@@ -7,11 +7,12 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libwebp-dev \
     zip \
     unzip \
-    libpq-dev \
     supervisor \
-    netcat-tradional
+    libpq-dev \
+    netcat-traditional
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -19,8 +20,17 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sockets pdo pdo_pgsql pgsql
 
+# Configure php extensions
+RUN docker-php-ext-configure gd --with-webp
+
 # Install Redis extension
 RUN pecl update-channels && pecl install redis && docker-php-ext-enable redis
+
+# Install imagick
+RUN  apt-get update && apt-get install -y \
+    libmagickwand-dev --no-install-recommends \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick
 
 RUN chmod -R 777 /var/log/supervisor
 RUN chmod -R 777 /var/run
